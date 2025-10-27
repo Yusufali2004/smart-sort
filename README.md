@@ -1,57 +1,84 @@
-Smart Sort ♻️
+# Smart Sort ♻️
 
-Smart Sort is an open-source, AI-powered mobile app designed to make waste segregation simple and intuitive. Point your camera at an item, and let AI tell you which bin it belongs to.
+**Smart Sort** is an open-source, AI-powered mobile app designed to make waste segregation simple and intuitive.  
+Point your camera at an item, and let AI tell you which bin it belongs to.
 
-Our V1.0 goal is to provide a "finished," reliable app for the waste sorting rules in Bengaluru, India (BBMP), while building a framework that can be adapted for any city in the world.
+> **STATUS:** 🚀 *In Development (Actively Seeking Contributors!)*  
+> Born from the *OneEarth International Hackathon 2025*, Smart Sort is now being developed as a full-scale, community-driven open-source project.  
+> We are actively looking for contributors to help us build **V1.0**!
 
-STATUS: 🚀 In Development (Actively Seeking Contributors!)
+---
 
-This project was born from the OneEarth International Hackathon 2025 and is now being developed as a full-scale, open-source project. We are actively looking for contributors to help us build V1.0.
+## 🌱 Project Vision
 
-Core Features
+Our **V1.0** goal is to deliver a **finished, reliable app** for the waste sorting rules in **Bengaluru, India (BBMP)**, while building a flexible framework that can be adapted to **any city in the world**.
 
-🤖 On-Device AI: Uses a custom TensorFlow Lite model for instant, offline-capable waste classification.
+---
 
-📱 Cross-Platform: Built with React Native for both Android and iOS.
+## ⚙️ Core Features
 
-👤 User Accounts: Powered by Firebase to track your scan history and personal sorting stats.
+### 🤖 On-Device AI  
+Uses a custom **TensorFlow Lite** model for instant, offline-capable waste classification.
 
-🌍 Scalable: The app's architecture is designed to support multiple city-specific models.
+### 📱 Cross-Platform  
+Built with **React Native** to support both Android and iOS.
 
-Our "Finished Project" Roadmap (V1.0)
+### 👤 User Accounts  
+Integrated with **Firebase** to track scan history and sorting statistics.
 
-[ ] AI Model: Refine the TFLite model to >90% accuracy for the 3 main BBMP categories (Wet, Dry, Sanitary).
+### 🌍 Scalable Architecture  
+Easily extendable to support city-specific AI models and waste classification rules.
 
-[ ] Backend: Implement Firebase Authentication and a Firestore database schema for user scan history.
+---
 
-[ ] Mobile App:
+## 🚧 Our “Finished Project” Roadmap (V1.0)
 
-[ ] User Sign-Up / Login screens.
+| Area | Goals |
+|------|-------|
+| **AI Model** | Refine the TensorFlow Lite model to achieve **>90% accuracy** for the 3 main BBMP categories: Wet, Dry, and Sanitary. |
+| **Backend** | Implement **Firebase Authentication** and **Firestore** database schema for user scan history. |
+| **Mobile App** | Build essential screens:<br> - User Sign-Up / Login<br> - Core “Tap to Scan” Camera Screen<br> - “Scan History” Screen pulling data from Firestore |
+| **Launch** | Publish **Smart Sort V1.0** on the **Google Play Store**. |
 
-[ ] The core "Tap to Scan" camera screen.
+---
 
-[ ] A "Scan History" screen that pulls data from Firestore.
+## 🧠 Tech Stack
 
-[ ] Launch: Publish the V1.0 app on the Google Play Store.
+| Layer | Technologies |
+|--------|---------------|
+| **Mobile** | React Native (TypeScript) |
+| **AI** | TensorFlow Lite / Keras / Python |
+| **Backend** | Firebase (Auth & Firestore) |
+| **Camera** | `react-native-vision-camera` |
+| **AI Integration** | `@switt/react-native-tensorflow-lite` |
 
-Tech Stack
+---
 
-Mobile: React Native (TypeScript)
+## 🤝 How to Contribute
 
-AI: TensorFlow Lite / Keras / Python
+We welcome **contributors of all skill levels** — whether you’re a developer, designer, data scientist, or just passionate about sustainability!
 
-Backend: Firebase (Auth & Firestore)
+To get started:
+1. Check out our [CONTRIBUTING.md](./CONTRIBUTING.md) file for contribution guidelines.
+2. Look through open issues and claim one that fits your skills.
+3. Fork the repository, create a branch, and submit a pull request!
 
-Camera: react-native-vision-camera
+Every contribution, big or small, helps move this project forward.
 
-AI Library: @switt/react-native-tensorflow-lite
+---
 
-How to Contribute
+## 📜 License
 
-We welcome contributors of all skill levels! This is a perfect project to get started in open source.
+This project is licensed under the **MIT License**.  
+See the [LICENSE](./LICENSE) file for details.
 
-Please read our CONTRIBUTING.md file to see how you can help, what our coding standards are, and how to submit your work.
+---
 
-License
+### 💚 Join Us!
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+Smart Sort is more than just an app — it’s a movement towards cleaner, smarter cities.  
+Together, we can make waste segregation easier, data-driven, and globally scalable.
+
+---
+
+**Let's build a cleaner planet — one scan at a time. 🌏**
