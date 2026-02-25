@@ -7,20 +7,25 @@ import io
 
 app = FastAPI()
 
-# 1. Essential for Next.js to talk to FastAPI
+# 1. Precise CORS Configuration
+# Listing specific origins is safer and more reliable for production
+origins = [
+    "http://localhost:3000",                  # Local Next.js dev server
+    "https://smart-sort-lac.vercel.app",      # Your Production Frontend
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=origins, 
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # 2. Load the "SmartSort Final" brain
-# Ensure the filename matches exactly what you downloaded
 MODEL = tf.keras.models.load_model('smartsort_final.keras')
 
-# 3. Final Class Mapping (from your Colab output)
-# Order MUST match train_gen.class_indices exactly!
+# 3. Final Class Mapping
 CLASS_NAMES = [
     'battery', 'biological', 'brown-glass', 'cardboard', 'clothes', 
     'glass', 'metal', 'paper', 'plastic', 'shoes', 'trash', 'white-glass'
@@ -28,7 +33,11 @@ CLASS_NAMES = [
 
 @app.get("/")
 def health_check():
-    return {"status": "SmartSort Engine Active", "classes_ready": len(CLASS_NAMES)}
+    return {
+        "status": "SmartSort Engine Active", 
+        "classes_ready": len(CLASS_NAMES),
+        "version": "2.0.0"
+    }
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
@@ -40,7 +49,7 @@ async def predict(file: UploadFile = File(...)):
     img_array = np.array(image) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
 
-    # 3. Inference (Run the model FIRST)
+    # 3. Inference
     predictions = MODEL.predict(img_array)
     predicted_index = np.argmax(predictions[0])
     confidence = float(np.max(predictions[0]))
@@ -48,7 +57,7 @@ async def predict(file: UploadFile = File(...)):
     # 4. Confidence Guard (The "Unknown" Filter)
     if confidence < 0.70:
         return {
-            "prediction": "unknown", # Changed to lowercase to match frontend map
+            "prediction": "unknown",
             "confidence": confidence,
             "message": "Object not recognized clearly. Please move closer or check lighting."
         }
@@ -59,7 +68,3 @@ async def predict(file: UploadFile = File(...)):
         "confidence": confidence,
         "message": f"Identified as {CLASS_NAMES[predicted_index]} with {confidence:.1%} confidence."
     }
-    
-    
-"""97% training accuracy and 91% validation accuracy. For a 12-class waste classification problem, these numbers are world-class and perfect for your Major Project presentation."""
-    
