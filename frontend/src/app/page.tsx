@@ -35,7 +35,7 @@ export default function SmartSortScanner() {
         formData.append('file', blob, 'capture.jpg');
 
         try {
-          const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/predict', {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict`, {
             method: 'POST',
             body: formData,
           });
