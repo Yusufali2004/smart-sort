@@ -24,6 +24,19 @@ export default function SmartSortScanner() {
   const [prediction, setPrediction] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<{item: string, time: string}[]>([]);
+  
+  // 2. Camera Configuration State
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+
+  const videoConstraints = {
+    width: 1280,
+    height: 720,
+    facingMode: facingMode
+  };
+
+  const toggleCamera = () => {
+    setFacingMode(prev => (prev === "user" ? "environment" : "user"));
+  };
 
   const capture = async () => {
     if (webcamRef.current) {
@@ -35,6 +48,7 @@ export default function SmartSortScanner() {
         formData.append('file', blob, 'capture.jpg');
 
         try {
+          // Using backticks for correct environment variable injection
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict`, {
             method: 'POST',
             body: formData,
@@ -42,11 +56,10 @@ export default function SmartSortScanner() {
           const data = await response.json();
           
           setPrediction(data.prediction);
-          // Add to history
           setHistory(prev => [{ item: data.prediction, time: new Date().toLocaleTimeString() }, ...prev].slice(0, 5));
         } catch (error) {
           console.error("Error connecting to backend:", error);
-          alert("Backend is offline!");
+          alert("Backend is offline or connection refused!");
         }
       }
       setLoading(false);
@@ -68,8 +81,19 @@ export default function SmartSortScanner() {
             audio={false}
             ref={webcamRef}
             screenshotFormat="image/jpeg"
+            videoConstraints={videoConstraints}
             className="w-full max-w-lg"
           />
+          
+          {/* Camera Toggle Overlay Button */}
+          <button 
+            onClick={toggleCamera}
+            className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 p-3 rounded-full border border-white/20 transition-all backdrop-blur-md"
+            title="Switch Camera"
+          >
+            🔄
+          </button>
+
           {loading && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-green-500"></div>
