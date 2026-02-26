@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Webcam from 'react-webcam';
 
 // 1. Disposal Logic Map
@@ -28,6 +28,20 @@ export default function SmartSortScanner() {
   // 2. Camera Configuration State
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
 
+  // --- AUTO-WAKE LOGIC ---
+  useEffect(() => {
+    const wakeServer = async () => {
+      try {
+        // Pings the root health-check to wake up Render from sleep
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/`);
+        console.log("Backend warming up...");
+      } catch (e) {
+        console.log("Server wake-up ping initiated.");
+      }
+    };
+    wakeServer();
+  }, []);
+
   const videoConstraints = {
     width: 1280,
     height: 720,
@@ -41,7 +55,6 @@ export default function SmartSortScanner() {
   const capture = async () => {
     if (webcamRef.current) {
       setLoading(true);
-      // Reduce quality and resolution to speed up upload
       const imageSrc = webcamRef.current.getScreenshot({ width: 640, height: 480 });
 
       if (imageSrc) {
@@ -70,16 +83,24 @@ export default function SmartSortScanner() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row items-start justify-center min-h-screen bg-gray-950 text-white p-6 gap-8">
+    <div className="flex flex-col lg:flex-row items-start justify-center min-h-screen bg-gray-950 text-white p-6 gap-8 font-sans">
 
-      {/* LEFT SIDE: SCANNER */}
+      {/* LEFT SIDE: SCANNER & INFO */}
       <div className="flex flex-col items-center w-full lg:w-2/3">
-        <h1 className="text-5xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
+        <h1 className="text-5xl md:text-6xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
           SmartSort AI
         </h1>
-        <p className="text-gray-400 mb-8">Next-Gen Waste Segregation System</p>
+        
+        {/* GUIDELINES BOX */}
+        <div className="max-w-xl text-center mb-8 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+          <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+            SmartSort is a <span className="text-green-400 font-semibold">full-stack AI platform</span> that uses Computer Vision to classify waste in real-time. 
+            Designed with a <span className="text-blue-400 font-semibold">decoupled architecture</span>, it provides instant disposal instructions based on 
+            <span className="text-white font-medium"> BBMP (Bengaluru) guidelines</span>.
+          </p>
+        </div>
 
-        <div className="relative border-4 border-gray-800 rounded-3xl overflow-hidden shadow-[0_0_50px_-12px_rgba(34,197,94,0.5)]">
+        <div className="relative border-4 border-gray-800 rounded-3xl overflow-hidden shadow-[0_0_50px_-12px_rgba(34,197,94,0.3)] bg-black">
           <Webcam
             audio={false}
             ref={webcamRef}
@@ -88,7 +109,7 @@ export default function SmartSortScanner() {
             className="w-full max-w-lg"
           />
 
-          {/* Camera Toggle Overlay Button */}
+          {/* Camera Toggle Button */}
           <button
             onClick={toggleCamera}
             className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 p-3 rounded-full border border-white/20 transition-all backdrop-blur-md z-10"
@@ -143,7 +164,7 @@ export default function SmartSortScanner() {
         <div className="space-y-4">
           {history.length === 0 && <p className="text-gray-600 text-sm">No scans yet today.</p>}
           {history.map((entry, index) => (
-            <div key={index} className="p-4 bg-gray-900 rounded-2xl border border-gray-800 flex justify-between items-center">
+            <div key={index} className="p-4 bg-gray-900 rounded-2xl border border-gray-800 flex justify-between items-center transition-all hover:border-gray-700">
               <div>
                 <p className="font-bold capitalize text-green-400">{entry.item}</p>
                 <p className="text-[10px] text-gray-500">{entry.time}</p>
