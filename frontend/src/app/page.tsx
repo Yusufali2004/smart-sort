@@ -23,8 +23,8 @@ export default function SmartSortScanner() {
   const webcamRef = useRef<Webcam>(null);
   const [prediction, setPrediction] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState<{item: string, time: string}[]>([]);
-  
+  const [history, setHistory] = useState<{ item: string, time: string }[]>([]);
+
   // 2. Camera Configuration State
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
 
@@ -41,25 +41,29 @@ export default function SmartSortScanner() {
   const capture = async () => {
     if (webcamRef.current) {
       setLoading(true);
-      const imageSrc = webcamRef.current.getScreenshot();
+      // 1. Reduce quality to 0.7 to shrink file size
+      const imageSrc = webcamRef.current.getScreenshot({ width: 640, height: 480 });
+
       if (imageSrc) {
         const blob = await fetch(imageSrc).then(res => res.blob());
         const formData = new FormData();
         formData.append('file', blob, 'capture.jpg');
 
         try {
-          // Using backticks for correct environment variable injection
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict`, {
             method: 'POST',
             body: formData,
           });
+
+          // Check if the server actually responded
+          if (!response.ok) throw new Error("Server error");
+
           const data = await response.json();
-          
           setPrediction(data.prediction);
           setHistory(prev => [{ item: data.prediction, time: new Date().toLocaleTimeString() }, ...prev].slice(0, 5));
         } catch (error) {
-          console.error("Error connecting to backend:", error);
-          alert("Backend is offline or connection refused!");
+          console.error("Error:", error);
+          alert("Request timed out. The server might be waking up—try again in 10 seconds.");
         }
       }
       setLoading(false);
@@ -68,14 +72,14 @@ export default function SmartSortScanner() {
 
   return (
     <div className="flex flex-col lg:flex-row items-start justify-center min-h-screen bg-gray-950 text-white p-6 gap-8">
-      
+
       {/* LEFT SIDE: SCANNER */}
       <div className="flex flex-col items-center w-full lg:w-2/3">
         <h1 className="text-5xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
           SmartSort AI
         </h1>
         <p className="text-gray-400 mb-8">Next-Gen Waste Segregation System</p>
-        
+
         <div className="relative border-4 border-gray-800 rounded-3xl overflow-hidden shadow-[0_0_50px_-12px_rgba(34,197,94,0.5)]">
           <Webcam
             audio={false}
@@ -84,9 +88,9 @@ export default function SmartSortScanner() {
             videoConstraints={videoConstraints}
             className="w-full max-w-lg"
           />
-          
+
           {/* Camera Toggle Overlay Button */}
-          <button 
+          <button
             onClick={toggleCamera}
             className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 p-3 rounded-full border border-white/20 transition-all backdrop-blur-md"
             title="Switch Camera"
