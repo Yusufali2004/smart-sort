@@ -41,7 +41,7 @@ export default function SmartSortScanner() {
   const capture = async () => {
     if (webcamRef.current) {
       setLoading(true);
-      // 1. Reduce quality to 0.7 to shrink file size
+      // Reduce quality and resolution to speed up upload
       const imageSrc = webcamRef.current.getScreenshot({ width: 640, height: 480 });
 
       if (imageSrc) {
@@ -55,7 +55,6 @@ export default function SmartSortScanner() {
             body: formData,
           });
 
-          // Check if the server actually responded
           if (!response.ok) throw new Error("Server error");
 
           const data = await response.json();
@@ -63,7 +62,7 @@ export default function SmartSortScanner() {
           setHistory(prev => [{ item: data.prediction, time: new Date().toLocaleTimeString() }, ...prev].slice(0, 5));
         } catch (error) {
           console.error("Error:", error);
-          alert("Request timed out. The server might be waking up—try again in 10 seconds.");
+          alert("Request timed out. The server might be waking up—please try again in 10-20 seconds.");
         }
       }
       setLoading(false);
@@ -92,15 +91,17 @@ export default function SmartSortScanner() {
           {/* Camera Toggle Overlay Button */}
           <button
             onClick={toggleCamera}
-            className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 p-3 rounded-full border border-white/20 transition-all backdrop-blur-md"
+            className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 p-3 rounded-full border border-white/20 transition-all backdrop-blur-md z-10"
             title="Switch Camera"
           >
             🔄
           </button>
 
           {loading && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-green-500"></div>
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-20">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-green-500 mb-4"></div>
+              <p className="text-white text-sm font-medium animate-pulse">Waking up AI Engine...</p>
+              <p className="text-gray-400 text-xs mt-1">First scan might take a minute</p>
             </div>
           )}
         </div>
