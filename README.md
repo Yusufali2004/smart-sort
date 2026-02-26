@@ -155,8 +155,8 @@ Md Yusuf Ali
 
 **Team Members:**  
 - Mohammad Zuhaib Wani  
-- Mohammad Zain  
-- Mohammad Hashir  
+- Mohammed Zain  
+- Mohammed Hashir  
 
 ---
 
