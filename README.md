@@ -21,6 +21,16 @@
 - [Technical Stack](#-technical-stack)
 - [Getting Started](#-getting-started)
 - [Engineering Highlights](#-engineering-highlights)
+- [Authentication & User Management](#-authentication--user-management)
+- [User Dashboard](#-user-dashboard)
+- [Database Architecture](#-database-architecture)
+- [Complete Database Schema](#-complete-database-schema)
+- [Row Level Security](#-row-level-security)
+- [Complete SmartSort Data Flow](#-complete-smartsort-data-flow)
+- [Application Routes](#-application-routes)
+- [Environment Configuration](#-environment-configuration)
+- [Current Application Capabilities](#-current-application-capabilities)
+- [Current Runtime Versions](#-current-runtime-versions)
 - [Team](#-team)
 - [Impact](#-impact)
 
@@ -297,6 +307,377 @@ Frontend runs at: `http://localhost:3000`
 | 🗺️ BBMP Mapping | Every class maps to a real Bengaluru disposal rule — not just a label |
 
 ---
+
+## 🔐 Authentication & User Management
+
+SmartSort uses Supabase Authentication to provide secure, user-specific access to the platform.
+
+### Authentication Features
+
+- 📧 Email/password authentication
+- 📝 User registration with full name
+- 🔑 Secure login and logout
+- 🛡️ Protected scanner and dashboard routes
+- 👤 User profile storage
+- 🔒 Supabase Row Level Security (RLS)
+- 🆔 Every waste record is associated with the authenticated user's UUID
+
+### Authentication Flow
+
+```text
+User
+ │
+ ├── Sign Up
+ │      │
+ │      └── Supabase Auth
+ │              │
+ │              └── User ID
+ │
+ ├── Login
+ │      │
+ │      └── Supabase Session
+ │
+ └── Authenticated Application
+         │
+         ├── SmartSort Scanner
+         │
+         └── Personal Dashboard
+```
+
+The frontend obtains the authenticated user through the Supabase client and uses the user's UUID when creating waste records.
+
+---
+
+## 📊 User Dashboard
+
+SmartSort provides a personalized dashboard for every authenticated user.
+
+The dashboard retrieves only the waste records belonging to the currently authenticated user.
+
+### Dashboard Features
+
+| Feature | Description |
+|---------|-------------|
+| 📈 Total Scans | Total number of waste classifications performed |
+| ♻️ Recyclable Items | Number of potentially recyclable classifications |
+| 🧠 Average Confidence | Average AI classification confidence |
+| 🌱 CO₂ Impact | Estimated cumulative carbon impact |
+| 📊 Waste Distribution | Category-wise breakdown of classified waste |
+| ⚖️ Recorded Weight | Total recorded waste weight |
+| 🔢 Total Quantity | Total quantity of recorded waste |
+| 🕒 Recent Scans | Latest user classifications |
+| 🚀 Quick Scan | Direct navigation back to the scanner |
+
+### Dashboard Flow
+
+```text
+Authenticated User
+        │
+        ▼
+   Supabase Auth
+        │
+        ▼
+     User UUID
+        │
+        ▼
+   waste_records
+        │
+        │  RLS:
+        │  auth.uid() = user_id
+        ▼
+ User-specific records
+        │
+        ▼
+ Dashboard Analytics
+        │
+        ├── Total Scans
+        ├── Recyclable Count
+        ├── Average Confidence
+        ├── CO₂ Impact
+        ├── Waste Distribution
+        └── Recent Activity
+```
+
+---
+
+## 🗄️ Database Architecture
+
+SmartSort uses PostgreSQL through Supabase for authentication-related data, user profiles, waste classifications, disposal information, and environmental impact calculations.
+
+### Database Tables
+
+| Table | Purpose |
+|-------|---------|
+| `profiles` | Stores application-level user profile information |
+| `waste_records` | Stores authenticated users' AI waste classifications |
+| `waste_categories` | Stores waste category definitions and properties |
+| `disposal_guides` | Stores disposal instructions for different materials |
+| `emission_factors` | Stores carbon/emission factors used for environmental calculations |
+
+### Database Relationship
+
+```text
+Supabase Auth
+     │
+     │ user.id
+     ▼
+ profiles
+     │
+     │
+     └───────────────┐
+                      │
+                      ▼
+               waste_records
+                      │
+           ┌──────────┼──────────┐
+           ▼          ▼          ▼
+    waste_categories  disposal_guides  emission_factors
+```
+
+---
+
+## 📋 Complete Database Schema
+
+### `profiles`
+
+Stores application-level information associated with an authenticated Supabase user.
+
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| `id` | UUID | NO | — |
+| `full_name` | TEXT | YES | — |
+| `created_at` | TIMESTAMPTZ | YES | — |
+
+### `waste_categories`
+
+Defines supported waste categories and their disposal characteristics.
+
+| Column | Type | Nullable |
+|--------|------|----------|
+| `id` | UUID | NO |
+| `name` | TEXT | NO |
+| `material` | TEXT | YES |
+| `recyclable` | BOOLEAN | NO |
+| `compostable` | BOOLEAN | NO |
+| `default_disposal_method` | TEXT | YES |
+| `created_at` | TIMESTAMPTZ | NO |
+
+### `disposal_guides`
+
+Stores disposal instructions associated with materials.
+
+| Column | Type | Nullable |
+|--------|------|----------|
+| `id` | UUID | NO |
+| `material` | TEXT | NO |
+| `disposal_method` | TEXT | NO |
+| `instructions` | TEXT | NO |
+| `created_at` | TIMESTAMPTZ | NO |
+
+### `emission_factors`
+
+Stores environmental impact factors used for CO₂e calculations.
+
+| Column | Type | Nullable |
+|--------|------|----------|
+| `id` | UUID | NO |
+| `material` | TEXT | NO |
+| `co2e_per_kg` | NUMERIC | NO |
+| `unit` | TEXT | NO |
+| `source` | TEXT | YES |
+| `recycling_factor` | NUMERIC | YES |
+| `created_at` | TIMESTAMPTZ | NO |
+
+### `waste_records`
+
+Stores the result of each user's waste classification.
+
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| `id` | UUID | NO | `gen_random_uuid()` |
+| `user_id` | UUID | NO | — |
+| `ai_category` | TEXT | YES | — |
+| `ai_confidence` | NUMERIC | YES | — |
+| `final_category` | TEXT | NO | — |
+| `material` | TEXT | YES | — |
+| `quantity` | INTEGER | NO | `1` |
+| `weight_grams` | NUMERIC | YES | — |
+| `weight_source` | TEXT | NO | `'manual'` |
+| `disposal_method` | TEXT | YES | — |
+| `carbon_impact_co2e` | NUMERIC | YES | — |
+| `created_at` | TIMESTAMPTZ | NO | `now()` |
+
+**`waste_records` Constraints**
+
+- Primary key: `waste_records_pkey` → `id`
+- Foreign key: `waste_records_user_id_fkey` → authenticated user
+- Check constraint: `weight_source`
+- Required fields enforced through `NOT NULL` constraints
+
+---
+
+## 🔒 Row Level Security
+
+SmartSort uses PostgreSQL Row Level Security to ensure that users can access only their own waste records.
+
+### `waste_records` Policies
+
+| Policy | Operation | Rule |
+|--------|-----------|------|
+| Users can view their own waste records | SELECT | `auth.uid() = user_id` |
+| Users can insert their own waste records | INSERT | `auth.uid() = user_id` |
+| Users can update their own waste records | UPDATE | `auth.uid() = user_id` |
+| Users can delete their own waste records | DELETE | `auth.uid() = user_id` |
+
+This prevents one authenticated user from accessing another user's scan history through the client application.
+
+**Read-only Reference Data**
+
+Authenticated users can read:
+- `waste_categories`
+- `disposal_guides`
+- `emission_factors`
+
+---
+
+## 🔄 Complete SmartSort Data Flow
+
+The application now extends beyond simple image classification into a complete authenticated waste-management workflow.
+
+```text
+┌──────────────────┐
+│      User        │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Supabase Auth    │
+│ Login / Signup   │
+└────────┬─────────┘
+         │
+         │ User UUID
+         ▼
+┌──────────────────┐
+│ SmartSort        │
+│ Scanner          │
+└────────┬─────────┘
+         │
+         │ Camera Image
+         ▼
+┌──────────────────┐
+│ FastAPI Backend  │
+│ POST /predict    │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ MobileNetV2      │
+│ ML Inference     │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Prediction +     │
+│ Confidence       │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Supabase         │
+│ waste_records    │
+└────────┬─────────┘
+         │
+         │ RLS
+         ▼
+┌──────────────────┐
+│ User Dashboard   │
+└──────────────────┘
+         │
+  ┌──────────────┬──────────────┐
+  ▼              ▼              ▼
+Analytics    Distribution    History
+  │              │              │
+  └──────────────┼──────────────┘
+                 ▼
+           User Insights
+```
+
+---
+
+## 🧩 Application Routes
+
+| Route | Purpose | Authentication |
+|-------|---------|-----------------|
+| `/` | AI waste scanner | Required |
+| `/login` | User login | Public |
+| `/signup` | User registration | Public |
+| `/dashboard` | Personal waste analytics | Required |
+
+---
+
+## 🌐 Environment Configuration
+
+**Frontend**
+
+Create `frontend/.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+For production, `NEXT_PUBLIC_API_URL` should point to the deployed Render backend.
+
+> Never commit private Supabase service-role keys or other server-side secrets to the repository.
+
+---
+
+## 🧪 Current Application Capabilities
+
+SmartSort currently supports the following end-to-end functionality:
+
+- ✅ User registration
+- ✅ User login
+- ✅ User logout
+- ✅ Protected application access
+- ✅ Camera-based waste capture
+- ✅ AI-powered waste classification
+- ✅ 12 waste classes
+- ✅ Confidence-based unknown filtering
+- ✅ Disposal guidance
+- ✅ Persistent user-specific scan records
+- ✅ Supabase PostgreSQL database
+- ✅ Row Level Security
+- ✅ Personalized dashboard
+- ✅ Waste distribution analytics
+- ✅ Recyclable item tracking
+- ✅ AI confidence analytics
+- ✅ Recorded quantity and weight
+- ✅ CO₂ impact tracking
+- ✅ Recent scan history
+- ✅ Render backend deployment
+- ✅ Vercel frontend deployment
+
+---
+
+## 🧪 Current Runtime Versions
+
+> **Note:** The System Architecture and Technical Stack sections above reflect the original project versions (Next.js 15 / Python 3.10). The current implementation has since been developed and tested with the versions below.
+
+| Component | Version |
+|-----------|---------|
+| Next.js | 16.1.6 |
+| React | 19.2.3 |
+| FastAPI | 0.129.0 |
+| Python | 3.12 |
+| TensorFlow | 2.20.0 |
+| Keras | 3.13.2 |
+| Supabase JS | 2.112.3 |
+| Tailwind CSS | 4.x |
+
+---
+
 
 ## 👨‍💻 Team
 
