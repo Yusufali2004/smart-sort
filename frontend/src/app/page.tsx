@@ -319,13 +319,10 @@ export default function SmartSortScanner() {
         });
 
       if (insertError) {
-        console.error(
-          "Supabase waste record error:",
-          insertError
-        );
+        console.error("Supabase waste record error:", insertError);
 
         throw new Error(
-          "The AI prediction succeeded, but the scan could not be saved."
+          `AI prediction succeeded, but saving failed: ${insertError.message}`
         );
       }
 
@@ -552,8 +549,8 @@ export default function SmartSortScanner() {
               {loading
                 ? "Analyzing..."
                 : !cameraReady
-                ? "Starting Camera..."
-                : "Identify Object"}
+                  ? "Starting Camera..."
+                  : "Identify Object"}
             </button>
 
             {/* ========================================== */}
@@ -572,10 +569,9 @@ export default function SmartSortScanner() {
                     </p>
 
                     <h2
-                      className={`text-3xl sm:text-4xl font-black ${
-                        DISPOSAL_INFO[prediction]
+                      className={`text-3xl sm:text-4xl font-black ${DISPOSAL_INFO[prediction]
                           ?.color || "text-white"
-                      }`}
+                        }`}
                     >
                       {prediction.toUpperCase()}
                     </h2>
