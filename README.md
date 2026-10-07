@@ -10,6 +10,21 @@
 
 ---
 
+## 📄 IEEE Xplore Publication
+
+> **SmartSort: A Deployed Deep Learning System for Real-Time Waste Classification, Municipal Disposal Guidance, and Persistent Waste-Impact Tracking**
+
+Published in the **2026 2nd International Conference on Ambient Intelligence, Knowledge Informatics and Industrial Electronics (AIKIIE)**.
+
+**Publisher:** IEEE  
+**DOI:** [10.1109/AIKIIE69997.2026.11707913](https://doi.org/10.1109/AIKIIE69997.2026.11707913)
+
+📄 **[Read the Paper on IEEE Xplore](https://ieeexplore.ieee.org/document/11707913/)**
+
+**Authors:** Mohammed Zain. I · Md Yusuf Ali · Mohammed Hashir · Mohammad Zuhaib Wani · Kavitha. D D
+
+---
+
 ## 📑 Table of Contents
 
 - [Live Deployment](#-live-deployment)
